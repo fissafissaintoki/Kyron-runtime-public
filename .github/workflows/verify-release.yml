@@ -1,0 +1,25 @@
+name: Verify Public Release
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Block private Core paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          forbidden='(^|/)(runtime|memory|secrets|approvals|registry|private|ops_core)(/|$)'
+          if find . -type f -not -path './.git/*' | grep -E "$forbidden"; then
+            echo "Private Core material detected."
+            exit 1
+          fi
+          echo "PUBLIC REPO SAFETY GREEN"
