@@ -69,7 +69,11 @@ class PublicRepositoryTests(unittest.TestCase):
     def test_private_path_and_secret_content_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             candidate = Path(temp) / "repo"
-            shutil.copytree(ROOT, candidate, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
+            shutil.copytree(
+                ROOT,
+                candidate,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"),
+            )
             leak = candidate / "knowledge" / "raw.md"
             leak.parent.mkdir()
             leak.write_text("not public", encoding="utf-8")
@@ -85,7 +89,11 @@ class PublicRepositoryTests(unittest.TestCase):
     def test_symlinks_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             candidate = Path(temp) / "repo"
-            shutil.copytree(ROOT, candidate, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
+            shutil.copytree(
+                ROOT,
+                candidate,
+                ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"),
+            )
             outside = Path(temp) / "outside.md"
             outside.write_text("outside", encoding="utf-8")
             os.symlink(outside, candidate / "docs" / "link.md")
