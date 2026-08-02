@@ -1,7 +1,9 @@
-name: Verify Public Release
+name: KYRON Public Release Gate
 
 on:
   pull_request:
+    branches: [main]
+  push:
     branches: [main]
   workflow_dispatch:
 
@@ -9,17 +11,14 @@ permissions:
   contents: read
 
 jobs:
-  repository-safety:
+  public-release-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Block private Core paths
-        shell: bash
-        run: |
-          set -euo pipefail
-          forbidden='(^|/)(runtime|memory|secrets|approvals|registry|private|ops_core)(/|$)'
-          if find . -type f -not -path './.git/*' | grep -E "$forbidden"; then
-            echo "Private Core material detected."
-            exit 1
-          fi
-          echo "PUBLIC REPO SAFETY GREEN"
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify public repository and discovered releases
+        run: python scripts/verify_release.py --repository-safety --repository-root .
+      - name: Run verifier regression tests
+        run: python -m unittest discover -s tests -v
