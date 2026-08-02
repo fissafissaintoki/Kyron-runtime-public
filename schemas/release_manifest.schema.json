@@ -1,34 +1,115 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "kyron.public.release.manifest.v1",
+  "$id": "https://github.com/fissafissaintoki/Kyron-runtime-public/schemas/release_manifest.schema.json",
+  "title": "KYRON Public Release Manifest",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "schema_version",
-    "version",
-    "artifact",
-    "sha256",
-    "created_at"
+    "release_id",
+    "created_at",
+    "state",
+    "source_evidence_sha256",
+    "target_repository",
+    "files",
+    "checks",
+    "approval"
   ],
   "properties": {
-    "schema_version": {
-      "const": "kyron.public.release.manifest.v1"
-    },
-    "version": {
-      "type": "string"
-    },
-    "artifact": {
-      "type": "string"
-    },
-    "sha256": {
+    "schema_version": {"const": "kyron.public-release-manifest.v1"},
+    "release_id": {"type": "string", "pattern": "^KYRON-PUBLIC-[A-Z0-9-]+$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "state": {
       "type": "string",
-      "pattern": "^[a-f0-9]{64}$"
+      "enum": ["PUBLIC_CANDIDATE", "PUBLIC_APPROVED"]
     },
-    "created_at": {
-      "type": "string"
+    "source_evidence_sha256": {"$ref": "#/$defs/sha256"},
+    "target_repository": {"const": "fissafissaintoki/Kyron-runtime-public"},
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/file"}
     },
-    "source_commit": {
-      "type": "string"
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "secret_scan_green",
+        "disclosure_review_green",
+        "personal_data_review_green",
+        "third_party_rights_green",
+        "hash_verification_green"
+      ],
+      "properties": {
+        "secret_scan_green": {"type": "boolean"},
+        "disclosure_review_green": {"type": "boolean"},
+        "personal_data_review_green": {"type": "boolean"},
+        "third_party_rights_green": {"type": "boolean"},
+        "hash_verification_green": {"type": "boolean"}
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["human_owner", "owner_approved", "publish_authorized", "approved_at"],
+      "properties": {
+        "human_owner": {"const": "Operator Fischer"},
+        "owner_approved": {"type": "boolean"},
+        "publish_authorized": {"type": "boolean"},
+        "approved_at": {"type": ["string", "null"], "format": "date-time"}
+      }
     }
   },
-  "additionalProperties": false
+  "allOf": [
+    {
+      "if": {"properties": {"state": {"const": "PUBLIC_APPROVED"}}},
+      "then": {
+        "properties": {
+          "approval": {
+            "properties": {
+              "owner_approved": {"const": true},
+              "publish_authorized": {"const": true},
+              "approved_at": {"type": "string", "format": "date-time"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "media_type",
+        "disclosure_class",
+        "origin",
+        "rights_status",
+        "personal_data_reviewed",
+        "metadata_removed"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "media_type": {"type": "string", "minLength": 1},
+        "disclosure_class": {
+          "type": "string",
+          "enum": ["PUBLIC", "PUBLIC_REVIEW_REQUIRED"]
+        },
+        "origin": {
+          "type": "string",
+          "enum": ["OWNER_CREATED", "LICENSED_THIRD_PARTY", "PUBLIC_DOMAIN"]
+        },
+        "rights_status": {
+          "type": "string",
+          "enum": ["OWNED", "LICENSED_FOR_PUBLICATION", "PUBLIC_DOMAIN"]
+        },
+        "personal_data_reviewed": {"const": true},
+        "metadata_removed": {"const": true}
+      }
+    }
+  }
 }
