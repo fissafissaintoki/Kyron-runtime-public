@@ -29,6 +29,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  issues: write
 
 concurrency:
   group: kyron-dj-operator-pages
@@ -98,3 +99,52 @@ jobs:
       - name: Deploy approved KYRON DJ Operator
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify live application and public release manifest
+        id: live-proof
+        shell: bash
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          public_url="${PAGE_URL%/}/"
+          for attempt in $(seq 1 30); do
+            app="$(curl -fsSL --connect-timeout 10 --max-time 30 "$public_url" || true)"
+            manifest="$(curl -fsSL --connect-timeout 10 --max-time 30 "${public_url}release-manifest.json" || true)"
+            if grep -q "KYRON DJ Operator" <<<"$app" \
+              && grep -q "KYRON-PUBLIC-DJ-OPERATOR-V0-1" <<<"$manifest"; then
+              echo "PUBLIC_APP_GREEN — $public_url"
+              echo "PUBLIC_MANIFEST_GREEN — ${public_url}release-manifest.json"
+              echo "public_url=$public_url" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Waiting for Pages propagation — attempt $attempt/30"
+            sleep 10
+          done
+          echo "PRODUCTION DEPLOYMENT RED — live app or manifest did not verify"
+          exit 71
+
+      - name: Publish production deployment receipt
+        uses: actions/github-script@v8
+        env:
+          PUBLIC_URL: ${{ steps.live-proof.outputs.public_url }}
+          DEPLOYED_SHA: ${{ github.sha }}
+        with:
+          script: |
+            const body = [
+              "## PRODUCTION_DEPLOYMENT_PASS",
+              "",
+              `- commit: \`${process.env.DEPLOYED_SHA}\``,
+              `- public app: ${process.env.PUBLIC_URL}`,
+              `- release manifest: ${process.env.PUBLIC_URL}release-manifest.json`,
+              "- live application marker: `KYRON DJ Operator`",
+              "- live manifest marker: `KYRON-PUBLIC-DJ-OPERATOR-V0-1`",
+              "- audio policy: local device only",
+              "- verified by: GitHub Pages production workflow",
+            ].join("\n");
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 4,
+              body,
+            });
