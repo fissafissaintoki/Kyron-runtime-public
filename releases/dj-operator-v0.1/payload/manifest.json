@@ -1,0 +1,19 @@
+{
+  "name": "KYRON DJ Operator",
+  "short_name": "DJ Operator",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#05070b",
+  "theme_color": "#070b11",
+  "description": "Free local-first two-deck DJ operator and teacher workflow.",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
