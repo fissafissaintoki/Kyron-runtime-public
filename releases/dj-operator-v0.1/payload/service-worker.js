@@ -10,7 +10,7 @@ const SHELL = [
   "app.js?v=dj-operator-v1",
   "engine.js?v=dj-operator-v1",
   "session.js?v=dj-operator-v1",
-  "manifest.webmanifest?v=dj-operator-v1",
+  "manifest.json?v=dj-operator-v1",
   "icon.svg"
 ].map(asset);
 
