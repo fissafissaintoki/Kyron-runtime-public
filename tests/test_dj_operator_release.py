@@ -69,7 +69,7 @@ class DjOperatorPublicReleaseTests(unittest.TestCase):
         self.assertIn("AUDIO BLEIBT AUF DIESEM GERÄT", combined)
         self.assertIn("LOCAL_METADATA_ONLY_NO_AUDIO", combined)
 
-    def test_pages_workflow_is_production_guarded(self) -> None:
+    def test_pages_workflow_is_production_guarded_and_live_verified(self) -> None:
         workflow = (
             ROOT / ".github" / "workflows" / "dj-operator-pages.yml"
         ).read_text(encoding="utf-8")
@@ -78,6 +78,13 @@ class DjOperatorPublicReleaseTests(unittest.TestCase):
         self.assertIn("actions/upload-pages-artifact@v4", workflow)
         self.assertIn("actions/deploy-pages@v4", workflow)
         self.assertIn("test -f _site/manifest.json", workflow)
+        self.assertIn("issues: write", workflow)
+        self.assertIn("Verify live application and public release manifest", workflow)
+        self.assertIn("KYRON DJ Operator", workflow)
+        self.assertIn("KYRON-PUBLIC-DJ-OPERATOR-V0-1", workflow)
+        self.assertIn("issue_number: 4", workflow)
+        self.assertIn("PRODUCTION_DEPLOYMENT_PASS", workflow)
+        self.assertIn("actions/github-script@v8", workflow)
         self.assertGreaterEqual(
             workflow.count("if: github.event_name != 'pull_request'"),
             3,
