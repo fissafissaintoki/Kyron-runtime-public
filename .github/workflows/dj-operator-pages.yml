@@ -1,0 +1,100 @@
+name: KYRON DJ Operator Pages
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "releases/dj-operator-v0.1/**"
+      - "scripts/generate_dj_operator_release.py"
+      - "scripts/verify_release.py"
+      - "tests/test_dj_operator_release.py"
+      - ".github/workflows/dj-operator-pages.yml"
+      - ".github/workflows/verify-release.yml"
+      - "README.md"
+      - "CHANGELOG.md"
+  push:
+    branches: [main]
+    paths:
+      - "releases/dj-operator-v0.1/**"
+      - "scripts/generate_dj_operator_release.py"
+      - "scripts/verify_release.py"
+      - "tests/test_dj_operator_release.py"
+      - ".github/workflows/dj-operator-pages.yml"
+      - ".github/workflows/verify-release.yml"
+      - "README.md"
+      - "CHANGELOG.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: kyron-dj-operator-pages
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate approved release manifest
+        run: python scripts/generate_dj_operator_release.py
+      - name: Verify public repository and DJ release
+        run: python scripts/verify_release.py --repository-safety --repository-root .
+      - name: Run release regression tests
+        run: python -m unittest discover -s tests -v
+
+  build:
+    needs: contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate and verify release manifest
+        run: |
+          python scripts/generate_dj_operator_release.py
+          python scripts/verify_release.py \
+            --manifest releases/dj-operator-v0.1/release-manifest.json \
+            --artifact-dir releases/dj-operator-v0.1/payload
+      - name: Assemble public DJ Operator site
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _site
+          mkdir -p _site
+          cp -R releases/dj-operator-v0.1/payload/. _site/
+          cp releases/dj-operator-v0.1/release-manifest.json _site/release-manifest.json
+          touch _site/.nojekyll
+          test -f _site/index.html
+          test -f _site/manifest.json
+          test -f _site/service-worker.js
+          test -f _site/release-manifest.json
+      - name: Configure and enable GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Upload GitHub Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy approved KYRON DJ Operator
+        id: deployment
+        uses: actions/deploy-pages@v4

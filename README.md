@@ -6,11 +6,30 @@ private implementation, knowledge base or operating environment.
 
 ## Current status
 
-**PUBLIC CHANNEL READY — no downloadable production release is currently
-approved.**
+**PUBLIC APPROVED — KYRON DJ Operator v0.1.**
 
-When a release is added, it is official only if its manifest passes the Public
+Public application:
+
+**https://fissafissaintoki.github.io/Kyron-runtime-public/**
+
+The DJ Operator is a free, installable, local-first two-deck audio application.
+Audio files remain on the user's device. The published release contains no
+credentials, external provider dependency or uploaded audio.
+
+The release is official only when its generated manifest passes the Public
 Release Gate and every published file matches the recorded SHA-256 digest.
+The deployed site also exposes `release-manifest.json` for verification.
+
+## Approved capabilities
+
+- two local audio decks with play, seek and gain;
+- equal-power crossfader;
+- local waveform generation;
+- BPM tap, manual BPM and bounded deck synchronization;
+- four cue points per deck;
+- local low, mid and high energy analysis with Teacher View guidance;
+- set list, session notes and metadata-only JSON import/export;
+- installable desktop, iOS and Android PWA shell.
 
 ## What may appear here
 
@@ -24,8 +43,9 @@ Release Gate and every published file matches the recorded SHA-256 digest.
 
 - private source code or internal architecture;
 - prompts, raw dialogues, memory or knowledge records;
-- credentials, runtime data, local paths or operating evidence;
-- internal tests, decision logic or deployment access.
+- credentials, operating data, local paths or internal evidence;
+- internal tests, decision logic or deployment access;
+- user audio files or session content.
 
 ## Trust model
 
@@ -39,14 +59,8 @@ not an open-source license. See [RIGHTS.md](RIGHTS.md) and
 
 ## Verification
 
-Repository safety is checked on every pull request. Approved release payloads
-are verified with:
-
-```bash
-python scripts/verify_release.py \
-  --manifest releases/<release>/release-manifest.json \
-  --artifact-dir releases/<release>/payload
-```
+Repository safety is checked on every pull request. The DJ Operator manifest is
+generated deterministically from the payload and verified before deployment.
 
 Security reports: [SECURITY.md](SECURITY.md)  
 Release history: [CHANGELOG.md](CHANGELOG.md)  
