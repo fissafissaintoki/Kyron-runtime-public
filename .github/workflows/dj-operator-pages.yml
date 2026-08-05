@@ -73,7 +73,7 @@ jobs:
           cp releases/dj-operator-v0.1/release-manifest.json _site/release-manifest.json
           touch _site/.nojekyll
           test -f _site/index.html
-          test -f _site/manifest.webmanifest
+          test -f _site/manifest.json
           test -f _site/service-worker.js
           test -f _site/release-manifest.json
       - name: Configure and enable GitHub Pages
