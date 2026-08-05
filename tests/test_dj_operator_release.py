@@ -40,7 +40,7 @@ class DjOperatorPublicReleaseTests(unittest.TestCase):
                 "engine.js",
                 "icon.svg",
                 "index.html",
-                "manifest.webmanifest",
+                "manifest.json",
                 "service-worker.js",
                 "session.js",
                 "styles.css",
@@ -62,7 +62,7 @@ class DjOperatorPublicReleaseTests(unittest.TestCase):
         combined = "\n".join(
             path.read_text(encoding="utf-8")
             for path in files
-            if path.suffix.lower() in {".html", ".css", ".js", ".json", ".webmanifest", ".svg"}
+            if path.suffix.lower() in {".html", ".css", ".js", ".json", ".svg"}
         )
         self.assertNotIn("API_KEY", combined)
         self.assertNotIn("WebSocket", combined)
@@ -77,6 +77,7 @@ class DjOperatorPublicReleaseTests(unittest.TestCase):
         self.assertIn("enablement: true", workflow)
         self.assertIn("actions/upload-pages-artifact@v4", workflow)
         self.assertIn("actions/deploy-pages@v4", workflow)
+        self.assertIn("test -f _site/manifest.json", workflow)
         self.assertGreaterEqual(
             workflow.count("if: github.event_name != 'pull_request'"),
             3,
