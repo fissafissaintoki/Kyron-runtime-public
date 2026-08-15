@@ -64,7 +64,7 @@ jobs:
           print("HEALTH PASS", json.dumps(health, sort_keys=True))
 
           async def main() -> None:
-              async with streamable_http_client(mcp_url) as (read_stream, write_stream, _):
+              async with streamable_http_client(mcp_url) as (read_stream, write_stream):
                   async with ClientSession(read_stream, write_stream) as session:
                       init = await session.initialize()
                       print("INITIALIZE PASS", init.serverInfo.name, init.serverInfo.version)
