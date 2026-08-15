@@ -67,7 +67,7 @@ jobs:
               async with streamable_http_client(mcp_url) as (read_stream, write_stream):
                   async with ClientSession(read_stream, write_stream) as session:
                       init = await session.initialize()
-                      print("INITIALIZE PASS", init.serverInfo.name, init.serverInfo.version)
+                      print("INITIALIZE PASS", init.server_info.name, init.server_info.version)
                       tools = await session.list_tools()
                       names = sorted(tool.name for tool in tools.tools)
                       expected = sorted([
