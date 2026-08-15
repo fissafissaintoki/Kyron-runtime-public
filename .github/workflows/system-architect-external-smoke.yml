@@ -43,8 +43,21 @@ jobs:
           )
           with urllib.request.urlopen(req, timeout=30) as response:
               health_status = response.status
-              health = json.loads(response.read().decode("utf-8"))
+              final_url = response.geturl()
+              content_type = response.headers.get("content-type", "")
+              raw = response.read()
+
+          preview = raw[:1200].decode("utf-8", errors="replace")
+          print("HEALTH HTTP STATUS", health_status)
+          print("HEALTH FINAL URL", final_url)
+          print("HEALTH CONTENT TYPE", content_type)
+          print("HEALTH BODY PREVIEW", repr(preview))
           assert health_status == 200, health_status
+          try:
+              health = json.loads(raw.decode("utf-8"))
+          except Exception as exc:
+              raise AssertionError(f"/health did not return JSON; final_url={final_url} content_type={content_type}") from exc
+
           assert health.get("status") == "ok", health
           assert health.get("service") == "KYRON System Architect", health
           assert health.get("mcp_endpoint") == "/mcp", health
