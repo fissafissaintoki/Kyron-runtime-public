@@ -3,13 +3,13 @@ name: KYRON System Architect Public MCP Gate
 on:
   pull_request:
     paths:
-      - "system-architect-mcp/**"
+      - "scripts/system-architect-mcp/**"
       - ".github/workflows/system-architect-mcp-gate.yml"
   push:
     branches:
       - "release/system-architect-mcp-*"
     paths:
-      - "system-architect-mcp/**"
+      - "scripts/system-architect-mcp/**"
       - ".github/workflows/system-architect-mcp-gate.yml"
 
 permissions:
@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: system-architect-mcp
+        working-directory: scripts/system-architect-mcp
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
