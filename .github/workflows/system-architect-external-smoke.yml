@@ -1,0 +1,72 @@
+name: KYRON System Architect External MCP Smoke
+
+on:
+  push:
+    branches:
+      - verify/system-architect-external-smoke
+
+permissions:
+  contents: read
+
+jobs:
+  external-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_URL: https://kyron-runtime-public-isejl7azf-faekalius-9865s-projects.vercel.app
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install MCP client
+        run: python -m pip install 'mcp==2.0.0'
+      - name: Verify health, initialize and tools/list from outside Vercel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import asyncio
+          import json
+          import os
+          import urllib.request
+
+          from mcp import ClientSession
+          from mcp.client.streamable_http import streamable_http_client
+
+          base = os.environ["BASE_URL"].rstrip("/")
+          health_url = f"{base}/health"
+          mcp_url = f"{base}/mcp"
+
+          req = urllib.request.Request(
+              health_url,
+              headers={"User-Agent": "kyron-external-smoke/1.0"},
+          )
+          with urllib.request.urlopen(req, timeout=30) as response:
+              health_status = response.status
+              health = json.loads(response.read().decode("utf-8"))
+          assert health_status == 200, health_status
+          assert health.get("status") == "ok", health
+          assert health.get("service") == "KYRON System Architect", health
+          assert health.get("mcp_endpoint") == "/mcp", health
+          print("HEALTH PASS", json.dumps(health, sort_keys=True))
+
+          async def main() -> None:
+              async with streamable_http_client(mcp_url) as (read_stream, write_stream, _):
+                  async with ClientSession(read_stream, write_stream) as session:
+                      init = await session.initialize()
+                      print("INITIALIZE PASS", init.serverInfo.name, init.serverInfo.version)
+                      tools = await session.list_tools()
+                      names = sorted(tool.name for tool in tools.tools)
+                      expected = sorted([
+                          "architect_system",
+                          "diagnose_system",
+                          "plan_mcp_workflow",
+                          "build_production_manifest",
+                          "verify_evidence_receipt",
+                      ])
+                      assert names == expected, (names, expected)
+                      print("TOOLS_LIST PASS", json.dumps(names))
+
+          asyncio.run(main())
+          print("EXTERNAL_MCP_SMOKE PASS")
+          PY
