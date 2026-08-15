@@ -1,0 +1,58 @@
+name: KYRON System Architect Public MCP Gate
+
+on:
+  pull_request:
+    paths:
+      - "system-architect-mcp/**"
+      - ".github/workflows/system-architect-mcp-gate.yml"
+  push:
+    branches:
+      - "release/system-architect-mcp-*"
+    paths:
+      - "system-architect-mcp/**"
+      - ".github/workflows/system-architect-mcp-gate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: system-architect-mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install isolated runtime
+        run: python -m pip install .
+      - name: Compile public runtime
+        run: python -m compileall -q app.py
+      - name: Verify five read-only MCP tools and manifest hashes
+        run: |
+          python - <<'PY'
+          import asyncio
+          import hashlib
+          import json
+          from pathlib import Path
+          from app import mcp
+
+          tools = asyncio.run(mcp.list_tools())
+          assert len(tools) == 5
+          for tool in tools:
+              assert tool.annotations is not None
+              assert tool.annotations.read_only_hint is True
+              assert tool.annotations.open_world_hint is False
+              assert tool.annotations.destructive_hint is False
+
+          manifest = json.loads(Path('release-manifest.json').read_text())
+          for filename, expected in manifest['files'].items():
+              actual = hashlib.sha256(Path(filename).read_bytes()).hexdigest()
+              assert actual == expected, (filename, actual, expected)
+          assert manifest['owner_approval']['status'] == 'APPROVED'
+          assert manifest['source_boundary']['private_core_copied'] is False
+          assert manifest['source_boundary']['private_runtime_imports'] is False
+          PY
