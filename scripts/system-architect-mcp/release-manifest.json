@@ -1,0 +1,30 @@
+{
+  "release_id": "KYRON-SYSTEM-ARCHITECT-MCP-v1.0.0",
+  "status": "PUBLIC_APPROVED_CANDIDATE",
+  "service": "KYRON System Architect",
+  "scope": "minimized public MCP runtime only",
+  "source_boundary": {
+    "private_core_copied": false,
+    "private_runtime_imports": false,
+    "credentials_included": false,
+    "external_write_capability": false
+  },
+  "files": {
+    "app.py": "4fbbbcfaf072bcf2c2d21055d5843bfbd04f459d47ec7a6d7eabde7576e093f2",
+    "pyproject.toml": "2019d2d640853f3c8fd15907258db8906ecf0ada298253d9caf19294f1b0ebcd",
+    "README.md": "6bb6cedd11c7b0a0b03d5b69b19ad619373be367f0ece6a1c63b69738c2bcc6b"
+  },
+  "owner_approval": {
+    "status": "APPROVED",
+    "approved_by": "Operator Fischer",
+    "approved_at": "2026-08-15",
+    "scope": "PRIVATE KYRON CORE -> minimized Runtime-Export -> Manifest + Hashes -> separate Deployment-Source -> Vercel -> /health -> /mcp"
+  },
+  "deployment_gate": {
+    "https_required": true,
+    "health_path": "/health",
+    "mcp_path": "/mcp",
+    "external_initialize_required": true,
+    "tools_list_required": true
+  }
+}
