@@ -1,0 +1,65 @@
+{
+  "schema_version": "kyron.public-red-team-offer.v1",
+  "product_id": "KYRON_MCP_APP_GOVERNANCE_AUDIT",
+  "display_name": "KYRON MCP/App Governance Audit",
+  "commercial_status": "COMMERCIAL_HYPOTHESIS",
+  "public_offer_status": "OWNER_GATED_DRAFT",
+  "primary_cta": {
+    "status": "AVAILABLE",
+    "label": "Review the bounded audit intake checklist",
+    "href": "docs/RED_TEAM_MCP_APP_GOVERNANCE_AUDIT_INTAKE.md",
+    "destination_type": "PUBLIC_DOCUMENT"
+  },
+  "owner_gates": {
+    "privacy": {
+      "status": "BLOCKED_OWNER_INPUT",
+      "required_owner_inputs": [
+        "privacy_policy_url",
+        "effective_date",
+        "responsible_entity_or_role",
+        "data_retention_statement",
+        "rights_request_contact"
+      ],
+      "values": {
+        "privacy_policy_url": null,
+        "effective_date": null,
+        "responsible_entity_or_role": null,
+        "data_retention_statement": null,
+        "rights_request_contact": null
+      }
+    },
+    "support": {
+      "status": "BLOCKED_OWNER_INPUT",
+      "required_owner_inputs": [
+        "support_contact",
+        "support_scope",
+        "support_response_boundary",
+        "security_escalation_path"
+      ],
+      "values": {
+        "support_contact": null,
+        "support_scope": null,
+        "support_response_boundary": null,
+        "security_escalation_path": null
+      }
+    },
+    "payment": {
+      "status": "BLOCKED_OWNER_INPUT",
+      "payments_enabled": false,
+      "required_owner_inputs": [
+        "payment_provider",
+        "provider_mode",
+        "product_price_reference",
+        "payment_terms_approved",
+        "owner_payment_configuration_approval"
+      ],
+      "values": {
+        "payment_provider": null,
+        "provider_mode": null,
+        "product_price_reference": null,
+        "payment_terms_approved": null,
+        "owner_payment_configuration_approval": null
+      }
+    }
+  }
+}
