@@ -22,5 +22,7 @@ jobs:
         run: python scripts/generate_dj_operator_release.py
       - name: Verify public repository and discovered releases
         run: python scripts/verify_release.py --repository-safety --repository-root .
+      - name: Verify Red Team Auditor public offer boundary
+        run: python scripts/verify_red_team_public_offer.py --content --repository-root .
       - name: Run verifier regression tests
         run: python -m unittest discover -s tests -v
