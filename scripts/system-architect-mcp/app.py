@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import os
-from typing import Annotated
+from typing import Annotated, Literal
 
 from mcp.server import MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import ToolAnnotations
-from pydantic import Field
+from pydantic import BaseModel, ConfigDict, Field
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
@@ -16,7 +16,67 @@ SERVER_INSTRUCTIONS = (
     "It returns structured guidance from user-supplied inputs only. "
     "It does not access credentials, local files, private KYRON infrastructure, "
     "external providers, or mutable external state. The human remains owner."
+    " Do not provide credentials, secrets, personal data, or customer records."
 )
+
+
+class _OutputModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class ArchitectSystemResult(_OutputModel):
+    process_name: str
+    objective: str
+    owner: Literal["HUMAN_OWNER"]
+    mode: Literal["AUDIT_THEN_BUILD"]
+    risk_level: Literal["LOW", "MEDIUM", "HIGH"]
+    constraints: list[str]
+    boundaries: list[str]
+    gates: list[str]
+    evidence_required: list[str]
+    safe_next_step: str
+
+
+class DiagnoseSystemResult(_OutputModel):
+    process_name: str
+    status: Literal["MATCH", "GAP"]
+    observed_state: str
+    expected_state: str
+    evidence_count: int
+    problem_class: Literal["NONE", "STATE_MISMATCH"]
+    missing_evidence: list[str]
+    safe_next_step: str
+
+
+class MCPWorkflowStep(_OutputModel):
+    step: int
+    action: str
+    gate: str
+
+
+class MCPWorkflowPlanResult(_OutputModel):
+    goal: str
+    declared_tools: list[str]
+    execution: Literal["NOT_EXECUTED"]
+    steps: list[MCPWorkflowStep]
+    write_status: Literal["OWNER_APPROVAL_REQUIRED", "NO_WRITES_REQUESTED"]
+
+
+class ProductionManifestResult(_OutputModel):
+    service_name: str
+    public_mcp_url: str
+    auth_mode: Literal["NONE", "OAUTH"]
+    external_domains: list[str]
+    checks: list[str]
+    status: Literal["READY_FOR_EXTERNAL_VERIFICATION", "BLOCKED"]
+    blockers: list[str]
+
+
+class EvidenceReceiptResult(_OutputModel):
+    receipt_id: str
+    status: Literal["DECLARED_FIELDS_PASS", "DECLARED_FIELDS_BLOCKED"]
+    verification_scope: Literal["DECLARED_FIELDS_ONLY"]
+    blockers: list[str]
 
 
 def _annotations() -> ToolAnnotations:
@@ -39,7 +99,7 @@ def _hosts() -> list[str]:
 
 mcp = MCPServer(
     "KYRON System Architect",
-    version="1.0.0",
+    version="1.1.0",
     instructions=SERVER_INSTRUCTIONS,
 )
 
@@ -48,13 +108,14 @@ mcp = MCPServer(
     title="Architect a governed system",
     description="Turn a process objective into a bounded architecture with ownership, controls, gates, evidence, and a safe next step.",
     annotations=_annotations(),
+    structured_output=True,
 )
 def architect_system(
     process_name: Annotated[str, Field(min_length=1, max_length=160)],
     objective: Annotated[str, Field(min_length=1, max_length=4000)],
     constraints: Annotated[list[str], Field(max_length=20)] = [],
     risk_level: Annotated[str, Field(pattern="^(LOW|MEDIUM|HIGH)$")] = "MEDIUM",
-) -> dict:
+) -> ArchitectSystemResult:
     gates = ["OWNER_GATE", "EVIDENCE_GATE", "QUALITY_GATE"]
     if risk_level == "HIGH":
         gates.insert(1, "RED_TEAM_GATE")
@@ -84,15 +145,16 @@ def architect_system(
 
 @mcp.tool(
     title="Diagnose a governed system",
-    description="Compare observed and expected process states and identify the smallest evidence-backed problem class and next check.",
+    description="Compare user-supplied observed and expected process states and identify a deterministic mismatch class and next check. It does not independently verify evidence.",
     annotations=_annotations(),
+    structured_output=True,
 )
 def diagnose_system(
     process_name: Annotated[str, Field(min_length=1, max_length=160)],
     observed_state: Annotated[str, Field(min_length=1, max_length=4000)],
     expected_state: Annotated[str, Field(min_length=1, max_length=4000)],
     evidence: Annotated[list[str], Field(max_length=30)] = [],
-) -> dict:
+) -> DiagnoseSystemResult:
     status = "MATCH" if observed_state.strip() == expected_state.strip() else "GAP"
     return {
         "process_name": process_name,
@@ -110,12 +172,13 @@ def diagnose_system(
     title="Plan a bounded MCP workflow",
     description="Convert a goal and declared tool set into a gated workflow without invoking any tool.",
     annotations=_annotations(),
+    structured_output=True,
 )
 def plan_mcp_workflow(
     goal: Annotated[str, Field(min_length=1, max_length=4000)],
     available_tools: Annotated[list[str], Field(min_length=1, max_length=20)],
     write_actions_requested: bool = False,
-) -> dict:
+) -> MCPWorkflowPlanResult:
     return {
         "goal": goal,
         "declared_tools": available_tools,
@@ -140,13 +203,14 @@ def plan_mcp_workflow(
     title="Build a production manifest",
     description="Evaluate supplied public MCP deployment metadata and return a readiness manifest without contacting the endpoint.",
     annotations=_annotations(),
+    structured_output=True,
 )
 def build_production_manifest(
     service_name: Annotated[str, Field(min_length=1, max_length=160)],
     public_mcp_url: Annotated[str, Field(min_length=1, max_length=500)],
     auth_mode: Annotated[str, Field(pattern="^(NONE|OAUTH)$")] = "NONE",
     external_domains: Annotated[list[str], Field(max_length=20)] = [],
-) -> dict:
+) -> ProductionManifestResult:
     blockers = []
     if not public_mcp_url.startswith("https://"):
         blockers.append("Public MCP URL must use HTTPS.")
@@ -170,9 +234,10 @@ def build_production_manifest(
 
 
 @mcp.tool(
-    title="Verify an evidence receipt",
-    description="Check supplied receipt fields deterministically and return VERIFIED only when every declared gate passes.",
+    title="Validate declared evidence receipt fields",
+    description="Validate user-supplied receipt fields deterministically. It does not hash an artifact or reach an endpoint.",
     annotations=_annotations(),
+    structured_output=True,
 )
 def verify_evidence_receipt(
     receipt_id: Annotated[str, Field(min_length=1, max_length=180)],
@@ -180,7 +245,7 @@ def verify_evidence_receipt(
     quality_gate_status: Annotated[str, Field(pattern="^(GREEN|RED)$")],
     endpoint_status: Annotated[str, Field(pattern="^(REACHABLE|UNREACHABLE)$")],
     owner_approval: bool,
-) -> dict:
+) -> EvidenceReceiptResult:
     blockers = []
     if len(artifact_sha256) != 64 or any(ch not in "0123456789abcdefABCDEF" for ch in artifact_sha256):
         blockers.append("Artifact SHA-256 is invalid.")
@@ -192,7 +257,8 @@ def verify_evidence_receipt(
         blockers.append("Human owner approval is missing.")
     return {
         "receipt_id": receipt_id,
-        "status": "VERIFIED" if not blockers else "NOT_VERIFIED",
+        "status": "DECLARED_FIELDS_PASS" if not blockers else "DECLARED_FIELDS_BLOCKED",
+        "verification_scope": "DECLARED_FIELDS_ONLY",
         "blockers": blockers,
     }
 
@@ -203,7 +269,7 @@ async def health(_: Request) -> JSONResponse:
         {
             "status": "ok",
             "service": "KYRON System Architect",
-            "version": "1.0.0",
+            "version": mcp.version,
             "mcp_endpoint": "/mcp",
             "public_runtime": True,
         }
