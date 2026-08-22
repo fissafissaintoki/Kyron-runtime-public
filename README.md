@@ -14,6 +14,10 @@ It produces a versioned, reviewable assurance pack from an agreed scope: the dec
 
 The initial engagement is deliberately narrow: one named agent or MCP surface, one agreed review run and clear release/rework evidence.
 
+## Live developer surface
+
+The read-only **KYRON System Architect** runtime is available at [MCP endpoint](https://kyron-runtime-public.vercel.app/mcp); its [health check](https://kyron-runtime-public.vercel.app/health) reports the deployed service and version. It provides deterministic planning and metadata checks from user-supplied inputs only.
+
 ## Why a team would use KYRON
 
 KYRON is intended for workflows where:
