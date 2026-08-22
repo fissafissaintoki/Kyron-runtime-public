@@ -6,6 +6,14 @@ Organizations already have access to powerful models. The harder problem is maki
 
 KYRON is built around that problem.
 
+## Start here — KYRON Agent Assurance
+
+**[KYRON Agent Assurance](https://kyron-agent-assurance.faekalius345328.chatgpt.site)** is the public commercial entry point for teams preparing an MCP server or AI agent for a bounded release.
+
+It produces a versioned, reviewable assurance pack from an agreed scope: the declared tool surface, permission and action boundaries, supplied control evidence, open findings and a receipt. It assesses supplied metadata and evidence; it does not access customer systems, execute tests in production or certify regulatory compliance.
+
+The initial engagement is deliberately narrow: one named agent or MCP surface, one agreed review run and clear release/rework evidence.
+
 ## Why a team would use KYRON
 
 KYRON is intended for workflows where:
@@ -61,15 +69,11 @@ KYRON is designed around explicit boundaries:
 
 Private implementation, internal prompts, knowledge structures and Operator IP are not part of this public release channel.
 
-## Current public proof — KYRON DJ Operator v0.1
+## Public reference release — KYRON DJ Operator v0.1
 
 **PUBLIC APPROVED.**
 
-The current public reference release is the KYRON DJ Operator, a free, installable, local-first two-deck audio application.
-
-Public application:
-
-**https://fissafissaintoki.github.io/Kyron-runtime-public/**
+The current public reference release is the KYRON DJ Operator, a free, installable, local-first two-deck audio application. It is a reference release, not the commercial entry point.
 
 It demonstrates the release-channel principles in a bounded domain: local data handling, explicit capabilities, deterministic release manifests and public verification evidence.
 
@@ -84,7 +88,7 @@ Approved capabilities include:
 - set list, session notes and metadata-only JSON import/export;
 - installable desktop, iOS and Android PWA shell.
 
-The DJ Operator is a public reference release. It is not the boundary of KYRON's commercial operational use.
+The DJ Operator demonstrates bounded release-channel principles in a low-risk domain. It is not the boundary of KYRON's commercial operational use.
 
 ## Public release boundary
 
