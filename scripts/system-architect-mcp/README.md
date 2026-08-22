@@ -18,3 +18,7 @@ The runtime exposes five read-only tools:
 
 Human ownership remains explicit. This runtime does not execute deployments, provider calls,
 external writes, or privileged operations.
+
+Use only non-sensitive metadata. Do not submit credentials, secrets, personal data, customer
+records, or production payloads. Check `/health` for the deployed version before relying on a
+specific release capability.

@@ -47,6 +47,8 @@ jobs:
               assert tool.annotations.read_only_hint is True
               assert tool.annotations.open_world_hint is False
               assert tool.annotations.destructive_hint is False
+              assert tool.output_schema is not None
+              assert tool.output_schema.get('type') == 'object'
 
           manifest = json.loads(Path('release-manifest.json').read_text())
           for filename, expected in manifest['files'].items():

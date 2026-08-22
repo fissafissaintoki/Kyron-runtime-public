@@ -1,6 +1,6 @@
 {
-  "release_id": "KYRON-SYSTEM-ARCHITECT-MCP-v1.0.0",
-  "status": "PUBLIC_APPROVED_CANDIDATE",
+  "release_id": "KYRON-SYSTEM-ARCHITECT-MCP-v1.1.0",
+  "status": "SOURCE_CANDIDATE_PENDING_DEPLOYMENT",
   "service": "KYRON System Architect",
   "scope": "minimized public MCP runtime only",
   "source_boundary": {
@@ -10,9 +10,9 @@
     "external_write_capability": false
   },
   "files": {
-    "app.py": "4fbbbcfaf072bcf2c2d21055d5843bfbd04f459d47ec7a6d7eabde7576e093f2",
-    "pyproject.toml": "2019d2d640853f3c8fd15907258db8906ecf0ada298253d9caf19294f1b0ebcd",
-    "README.md": "6bb6cedd11c7b0a0b03d5b69b19ad619373be367f0ece6a1c63b69738c2bcc6b"
+    "app.py": "0aeb0c073f26549410ab769b4cea39b942a040877286073233c909ecb9a8b63a",
+    "pyproject.toml": "78499b143187bb91c1888e80e7dd0e3412eb177c437eaa867400bff7557433f2",
+    "README.md": "7cee93396e4c1143f3a7ad9296de9aa9bab120c14036d82f755068a1933a70f2"
   },
   "owner_approval": {
     "status": "APPROVED",
@@ -25,6 +25,7 @@
     "health_path": "/health",
     "mcp_path": "/mcp",
     "external_initialize_required": true,
-    "tools_list_required": true
+    "tools_list_required": true,
+    "structured_output_required": true
   }
 }
