@@ -269,7 +269,7 @@ async def health(_: Request) -> JSONResponse:
         {
             "status": "ok",
             "service": "KYRON System Architect",
-            "version": "1.0.0",
+            "version": mcp.version,
             "mcp_endpoint": "/mcp",
             "public_runtime": True,
         }

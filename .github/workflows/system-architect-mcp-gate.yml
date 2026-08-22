@@ -38,7 +38,7 @@ jobs:
           import hashlib
           import json
           from pathlib import Path
-          from app import mcp
+          from app import health, mcp
 
           tools = asyncio.run(mcp.list_tools())
           assert len(tools) == 5
@@ -49,6 +49,10 @@ jobs:
               assert tool.annotations.destructive_hint is False
               assert tool.output_schema is not None
               assert tool.output_schema.get('type') == 'object'
+
+          health_response = asyncio.run(health(None))
+          health_body = json.loads(health_response.body)
+          assert health_body['version'] == mcp.version
 
           manifest = json.loads(Path('release-manifest.json').read_text())
           for filename, expected in manifest['files'].items():
